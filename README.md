@@ -2,7 +2,8 @@
 Special imports:
 0. python.exe -m pip install --upgrade pip
 1. pip install paramiko
-2. pip install configobj ?
+2. pip install configobj
+
 3. pip install selenium
 4. pip install webdriver-manager
 5. pip install pywin32 ???
