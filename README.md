@@ -8,7 +8,7 @@ Special imports:
 5. pip install pywin32 ???
 6. pip install pandas
 
-SIPp sever (ubuntu) should include zip package installed!
+SIPp sever (ubuntu) should include zip package installed
 
 
 configfile.py
