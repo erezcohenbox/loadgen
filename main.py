@@ -4,6 +4,7 @@ from prepare import *
 from helpers import *
 from prepare import prepare
 from configfile import configfile
+from monitoring import monitoring
 def main():
     main_menu()
 
@@ -14,25 +15,40 @@ def main_menu():
     |A|e|o|n|i|x| |L|o|a|d| |G|e|n|
     +-+-+-+-+-+-+ +-+-+-+-+ +-+-+-+    
     Aeonix Load Gen - main menu
+    0 -- dashboard view
     1 -- set the configuration file
-    2 -- system environmnt status and settings
+    2 -- aeonix environmnt settings
     3 -- prepare for simulation
-    4 -- prepare aeonix for load running
-    5 -- run load tests
-    6 -- quit""" + bcolors.PROMPT + """
+    4 -- activate and control simulation
+    5 -- monitoring current simulation activties
+    6 -- collect information and analyze
+    7 -- maintenance operations
+    8 -- quit""" + bcolors.PROMPT + """
     Enter your choice [1-5]: """ + bcolors.RESET 
     choice = input(prompt )
-    if choice in ["1"]:
+    if choice in ["0"]:
+        main_menu()
+    elif choice in ["1"]:
         configfile_menu()
     elif choice in ["2"]:
+        if not 'remove' in configfile.checkOptions():
+            print(output.prompt_configfile_unavailable_option_2)
+            main_menu()
         environment_menu()
     elif choice in ["3"]:
         prepare_menu()
     elif choice in ["4"]:
         main_menu()
     elif choice in ["5"]:
-        main_menu()
+        monitoring_menu()
     elif choice in ["6"]:
+        analyzing_menu()
+        main_menu()
+    elif choice in ["7"]:
+        main_menu()
+    elif choice in ["8"]:
+        main_menu()
+    elif choice in ["8"]:
         print(output.prompt_main_goodbye)
         sys.exit()  # Leave the program
     else:
@@ -41,14 +57,13 @@ def main_menu():
 
 def configfile_menu():
     print(bcolors.RESET)
-    prompt = bcolors.MENU + f"""
+    prompt = bcolors.MENU + """
     Aeonix Load Gen - configuration file menu
     1 -- add a new server
     2 -- delete a server
-    3 -- overview the configuraion file 
+    3 -- overview of the configuraion file 
     4 -- initialize the configuration file
-    5 -- go back
-    you can use the {', '.join(configfile.checkOptions())} option(s) only""" + bcolors.PROMPT + """
+    5 -- go back\n""" + bcolors.IND + bcolors.INFO + f"""you can use the {', '.join(configfile.checkOptions())} option(s) only""" + bcolors.PROMPT + """
     Enter your choice [1-5]: """ + bcolors.RESET
     choice = input(prompt)
     if choice in ["1"]:
@@ -60,7 +75,7 @@ def configfile_menu():
                 configfile.sectionAppend(check)
                 print(output.prompt_configfile_pass)
         else:
-            print(output.prompt_configfile_unavailable_option)
+            print(output.prompt_configfile_unavailable_option_1)
         configfile_menu()
     elif choice in ["2"]:
         if 'remove' in configfile.checkOptions():
@@ -71,19 +86,19 @@ def configfile_menu():
                 configfile.sectionRemove(check)
                 print(output.prompt_configfile_pass)
         else:
-            print(output.prompt_configfile_unavailable_option)
+            print(output.prompt_configfile_unavailable_option_1)
         configfile_menu()
     elif choice in ["3"]:
         if 'overview' in configfile.checkOptions():
             configfile.sectionsOverview()
         else:
-            print(output.prompt_configfile_unavailable_option)
+            print(output.prompt_configfile_unavailable_option_1)
         configfile_menu()
     elif choice in ["4"]:
         if 'initalize' in configfile.checkOptions():
             configfile.initialize()
         else:
-            print(output.prompt_configfile_unavailable_option)
+            print(output.prompt_configfile_unavailable_option_1)
         configfile_menu()
     elif choice in ["5"]:
         main_menu()
@@ -94,10 +109,10 @@ def configfile_menu():
 def environment_menu():
     print(bcolors.RESET)
     prompt = bcolors.MENU + f"""
-    Aeonix Load Gen - system environmnt menu
-    1 -- check environment status
-    2 -- upgrade servers
-    3 -- patch servers
+    Aeonix Load Gen - aeonix environmnt menu
+    1 -- upgrade aeonix servers
+    2 -- patch aeonix servers (captcha, more...)
+    3 -- set aeonix server(s) log level
     4 -- restart aeonix server(s)
     5 -- stop aeonix server(s)
     6 -- reboot aeonix server(s)
@@ -105,16 +120,6 @@ def environment_menu():
     Enter your choice [1-6]: """ + bcolors.RESET 
     choice = input(prompt)
     if choice in ["1"]:
-        print(output.prompt_environment_table_header)
-        print(output.prompt_environment_table_border)
-        for section in configfile.sectionsNames():
-            print(bcolors.INFO + bcolors.IND + 'aeonix : ' + bcolors.RESET + f"{configfile.sectionGetElement(section, 'aeonix_host'):<15}", end = '  ')
-            systemInfo = environmnt.statusInfo_anx(section)
-            print(f"{systemInfo[0]:<11}", f'{systemInfo[1]:<7}' + '  ' + f'{systemInfo[2]:<8}', sep = '  ')#, end = '  ')
-            print(bcolors.INFO + bcolors.IND + 'sipp   : ' + bcolors.RESET + f"{configfile.sectionGetElement(section, 'sipp_host'):<15}", end = '  ')
-            systemInfo = environmnt.statusInfo_sipp(section)
-            print(f"{systemInfo[0]:<11}", f'{systemInfo[1]:<7}', sep = '  ')#, end = '  ')
-            print(output.prompt_environment_table_border)
         environment_menu()
     elif choice in ["2"]:
         environment_menu()
@@ -135,44 +140,170 @@ def environment_menu():
 def prepare_menu():
     print(bcolors.RESET)
     prompt = bcolors.MENU + f"""
-    Aeonix Load Gen - prepare sipp for simulation
+    Aeonix Load Gen - prepare for simulation
     1 -- set simulation scope and create files
-    2 -- upload all the simulation files
-    3 -- apply simulation patches (captcha, etc..)
-    4 -- restart servers
-    5 -- stop servers
-    6 -- go back""" + bcolors.PROMPT + """
+    2 -- distribute simulation files
+    3 -- apply simulation patches
+    4 -- terminate sipp simulator(s) activities
+    5 -- clean all local collected activity logs
+    6 -- clean remote collected aeonix activity logs
+    7 -- clean remote collected sipp activity logs
+    8 -- reset the environmnt (clean all logs and restart aeonix servers)
+    9 -- go back""" + bcolors.PROMPT + """
     Enter your choice [1-6]: """ + bcolors.RESET 
     choice = input(prompt)
     if choice in ["1"]:
-        usersValue = prepare.getUsersValue()
-        startatValue = prepare.getStartatValue()
-        methodValue = prepare.getMethodValue()
-        print()
-        print(output.prompt_prepare_simulation_scope)
-        print(output.prompt_prepare_simulation_scope_servers + str(configfile.sectionsCount()) + 
-                    ' server(s)')
-        print(output.prompt_prepare_simulation_scope_users + str(usersValue) + ' users')
-        print(output.prompt_prepare_simulation_scope_startat + 'from user ' + str(startatValue) + 
-                    ' to user ' + str(startatValue + usersValue - 1))
-        print(output.prompt_prepare_simulation_scope_method + methodValue)
-        
-        prepare.createSimFiles(usersValue, startatValue, methodValue)
-        print(output.prompt_prepare_scripts_done)
+        prepare.setSimulScope()
         prepare_menu()
-
     elif choice in ["2"]:
-        prepare.uploadSimFiles()
+        environmnt.distributeFiles()
         prepare_menu()
     elif choice in ["3"]:
         prepare_menu()
     elif choice in ["4"]:
+        environmnt.sippFuncCall('terminate')
         prepare_menu()
     elif choice in ["5"]:
+        prepare.cleanLocalActivity()
         prepare_menu()
+    elif choice in ["6"]:
+        environmnt.anxFuncCall('clean')
+        environmnt.anxFuncCall('cleanZip')
+        prepare_menu()
+    elif choice in ["7"]:
+        environmnt.sippFuncCall('clean')
+        environmnt.sippFuncCall('cleanZip')
+        prepare_menu()
+    elif choice in ["8"]:
+        prepare.cleanLocalActivity()
+        environmnt.anxFuncCall('stop')
+        environmnt.anxFuncCall('clean')
+        environmnt.anxFuncCall('cleanZip')
+        environmnt.anxFuncCall('erase')
+        environmnt.sippFuncCall('clean')
+        environmnt.sippFuncCall('cleanZip')
+        environmnt.sippFuncCall('erase')
+        environmnt.anxFuncCall('start')        
+        prepare_menu()
+    elif choice in ["9"]:
+        main_menu()
+    else:
+        prepare_menu()
+
+
+def activate_menu():
+    print(bcolors.RESET)
+    prompt = bcolors.MENU + f"""
+    Aeonix Load Gen - activate and control load activities
+    1 -- activate/control endpoints registration
+    2 -- activate/control endpoints auto answer
+    3 -- activate/control endpoints call initiation
+    4 -- auto start all endpoints activities
+    5 -- block/unblock aeonix server(s) network trafic
+    6 -- gracefuly stop all endpoints activities
+    7 -- terminate all simulator(s) activities
+    8 -- go back""" + bcolors.PROMPT + """
+    Enter your choice [1-6]: """ + bcolors.RESET 
+    choice = input(prompt)
+    if choice in ["1"]:
+        activate_menu()
+    elif choice in ["2"]:
+        activate_menu()
+    elif choice in ["3"]:
+        activate_menu()
+    elif choice in ["4"]:
+        activate_menu()
+    elif choice in ["5"]:
+        activate_menu()
+    elif choice in ["6"]:
+        activate_menu()
+    elif choice in ["7"]:
+        main_menu()
+    else:
+        activate_menu()
+
+def monitoring_menu():
+    print(bcolors.RESET)
+    prompt = bcolors.MENU + f"""
+    Aeonix Load Gen - monitoring current activity
+    1 -- check the environment status
+    2 -- check sipp simulatior(s) activity
+    3 -- check aeonix server(s) activity and health
+    4 -- go back""" + bcolors.PROMPT + """
+    Enter your choice [1-6]: """ + bcolors.RESET 
+    choice = input(prompt)
+    if choice in ["1"]:
+        monitoring.currentStatus()
+        monitoring_menu()
+    elif choice in ["2"]:
+        monitoring_menu()
+    elif choice in ["3"]:
+        monitoring_menu()
+    elif choice in ["4"]:
+        main_menu()
+    else:
+        monitoring_menu()
+
+def analyzing_menu():
+    print(bcolors.RESET)
+    prompt = bcolors.MENU + f"""
+    Aeonix Load Gen - collect information and analyze
+    1 -- collect sipp simulation logs
+    2 -- collect aeonix activity logs
+    3 -- analyze sipp simulation activity
+    4 -- analyze aeonix simulation activity
+    5 -- analyze aeonix jvm activity
+    6 -- go back""" + bcolors.PROMPT + """
+    Enter your choice [1-7]: """ + bcolors.RESET 
+    choice = input(prompt)
+    if choice in ["1"]:
+        environmnt.sippFuncCall('collect')
+        environmnt.sippFuncCall('pack')
+        environmnt.sippFuncCall('download')
+        analyzing_menu()
+    elif choice in ["2"]:
+        environmnt.anxFuncCall('collect')
+        environmnt.anxFuncCall('pack')
+        environmnt.anxFuncCall('download')
+        analyzing_menu()
+    elif choice in ["3"]:
+        analyzing_menu()
+    elif choice in ["4"]:
+        analyzing_menu()
+    elif choice in ["5"]:
+        analyzing_menu()
     elif choice in ["6"]:
         main_menu()
     else:
-        environment_menu()
+        analyzing_menu()
+
+def maintenance_menu():
+    print(bcolors.RESET)
+    prompt = bcolors.MENU + f"""
+    Aeonix Load Gen - maintenance operations
+    1 -- reset the environment
+    2 -- delete all local logs
+    3 -- create a snapshot
+    4 -- revert to snapshot
+    5 -- alarm configuration
+    6 -- go back""" + bcolors.PROMPT + """
+    Enter your choice [1-6]: """ + bcolors.RESET 
+    choice = input(prompt)
+    if choice in ["1"]:
+        maintenance_menu()
+    elif choice in ["2"]:
+        maintenance_menu()
+    elif choice in ["3"]:
+        maintenance_menu()
+    elif choice in ["4"]:
+        maintenance_menu()
+    elif choice in ["5"]:
+        maintenance_menu()
+    elif choice in ["6"]:
+        main_menu()
+    else:
+        maintenance_menu()
+
+# maintenance
 
 main()

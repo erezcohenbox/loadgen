@@ -1,4 +1,4 @@
-import os, shutil, datetime, time
+import os, shutil, glob, datetime, time
 from turtle import left
 from configfile import configfile 
 import paramiko
@@ -23,7 +23,7 @@ class prepare:
             1: [1000, 2000, 3000, 5000],
             2: [2000, 4000, 6000, 8000],
             3: [3000, 6000, 9000, 12000],
-            4: [4000, 8000, 10000, 12000],
+            4: [4000, 8000, 10000, 15000],
             5: [5000, 10000, 15000, 20000],
             6: [6000, 12000, 18000, 24000]
         }
@@ -82,6 +82,24 @@ class prepare:
         except (ValueError, IndexError):
             return(default)    
 
+    def setSimulScope():
+        usersValue = prepare.getUsersValue()
+        startatValue = prepare.getStartatValue()
+        methodValue = prepare.getMethodValue()
+        print()
+        print(output.prompt_prepare_simulation_scope)
+        print(output.prompt_prepare_simulation_scope_servers + str(configfile.sectionsCount()) + 
+                    ' server(s)')
+        print(output.prompt_prepare_simulation_scope_users + str(usersValue) + ' users')
+        print(output.prompt_prepare_simulation_scope_startat + 'from user ' + str(startatValue) + 
+                    ' to user ' + str(startatValue + usersValue - 1))
+        print(output.prompt_prepare_simulation_scope_method + methodValue)
+        
+        prepare.createSimFiles(usersValue, startatValue, methodValue)
+        print(output.prompt_prepare_scripts_done)        
+
+
+
     def createSimFiles(usersValue, startatValue, methodValue):
         template_method = 'templates/'+ methodValue + '/'
         remote_path = 'simulator/'
@@ -97,14 +115,34 @@ class prepare:
         os.makedirs(main_local_path, exist_ok = True)
 
         print()
-        print(output.prompt_prepare_scripts_import_users_1 + str(usersValue) + output.prompt_prepare_scripts_import_users_2)
-        print(output.prompt_prepare_scripts_import_users_3)
-
-        with open(main_local_path +'/import_'+str(usersValue)+'_users.csv', 'w') as usersfile:
+        print(output.prompt_prepare_scripts_import_ANX_users_1 + str(usersValue) + output.prompt_prepare_scripts_import_ANX_users_2)
+        print(output.prompt_prepare_scripts_import_ANX_users_3)
+        with open(main_local_path +'/import_ANX_'+str(usersValue)+'_users.csv', 'w') as usersfile:
             for counter in range(startatValue, int(startatValue + usersValue)):
                 usersfile.write(str(counter) +','+str(counter) +','+str(counter) +'_Desc,'+str(counter)+',SIP terminal'+',aeonix.com\n')
             usersfile.close()
-        
+
+        print()
+        print(output.prompt_prepare_scripts_import_ACC_agents_1)
+        print(output.prompt_prepare_scripts_import_ACC_agents_2)
+        with open(main_local_path +'/ala.ini', 'w') as alainifile, open(main_local_path +'/import_ACC_600_agents.sql', 'w') as sqlfile:
+            sqlfile.write('INSERT INTO ecc.agent VALUES\n')
+            i = 1
+            for counter in range(configfile.sectionsCount()):
+                start = startatValue+(int(counter*usersValue/configfile.sectionsCount()))
+                end = start + int(600/configfile.sectionsCount())
+                for countersplit in range(start, end):
+                    alainifile.write('[Agent' + str(i) + ']\n')
+                    alainifile.write('AgentNum=' + str(countersplit) + '\n')
+                    alainifile.write('AgentExt=' + str(countersplit) + '\n')
+                    alainifile.write('ApplicationDevice=FALSE\n\n')
+                    sqlfile.write('('+str(i)+',\'AGENT_'+str(countersplit)+'\',\''+str(countersplit)+'\',NULL,\'1\',\'t\',NOW(),1,1,\'a\',NULL,NULL,NULL,1,NULL,0,NULL,0,0,NULL,NULL,\'\''+')')
+                    sqlfile.write(',\n') if i < 600 else sqlfile.write(';')
+                    i+=1
+            alainifile.close()
+            sqlfile.close()
+
+
         startatValueSplit = startatValue
         print()
         
@@ -114,13 +152,16 @@ class prepare:
             scriptsPath = prepare.setScriptsPath(usersValue, methodValue, section)
             sipp_local_path     = scriptsPath[0]
             aeonix_local_path   = scriptsPath[1]
-            download_local_path = scriptsPath[1]
+            sipp_download_local_path = scriptsPath[0] + '/downloads'
+            aeonix_download_local_path = scriptsPath[1] + '/downloads'
+            
             #sipp_local_path = os.path.join ('scripts/', str(usersValue) + '_users'+ '_' + methodValue + '/server_'+str(section) + '/sipp')
             #aeonix_local_path = os.path.join ('scripts/', str(usersValue) + '_users'+ '_' + methodValue + '/server_'+str(section) + '/aeonix')
             #download_local_path = os.path.join ('scripts/', str(usersValue) + '_users'+ '_' + methodValue + '/server_'+str(section) + '/download')
             os.makedirs(sipp_local_path, exist_ok = True)
             os.makedirs(aeonix_local_path, exist_ok = True)
-            os.makedirs(download_local_path, exist_ok = True)
+            os.makedirs(sipp_download_local_path, exist_ok = True)
+            os.makedirs(aeonix_download_local_path, exist_ok = True)
 
             print(output.prompt_prepare_scripts_1_templates)
             shutil.copytree(template_method + '/sipp', sipp_local_path, dirs_exist_ok=True)
@@ -170,24 +211,6 @@ class prepare:
             print()
             startatValueSplit = startatValueSplit + int(usersValue/configfile.sectionsCount()) 
 
-    def uploadSimFiles():
-        for section in configfile.sectionsNames():
-            try:
-                system = environmnt(section, 'sipp', 'upload')
-                print(system.comm)
-                print(system.check())
-            except:
-                print('FAIL')
-                continue
-            #tempFileRead = tempFileRead()
-            #usersValue  = tempFileRead [1]
-            #methodValue = tempFileRead [3]
-            #scriptsPath = prepare.setScriptsPath(usersValue, methodValue, section)
-            #sipp_local_path = scriptsPath[0]
-            #aeonix_local_path = scriptsPath[1]
-            #download_local_path = scriptsPath[2]
-            #environmnt.check(section, 'sipp', 'upload')
-
 
     def setScriptsPath(usersValue, methodValue, section):
         sipp_local_path = os.path.join ('scripts/', str(usersValue) + '_users'+ '_' + methodValue + '/server_'+str(section) + '/sipp')
@@ -195,6 +218,20 @@ class prepare:
         download_local_path = os.path.join ('scripts/', str(usersValue) + '_users'+ '_' + methodValue + '/server_'+str(section) + '/download')
         return(sipp_local_path, aeonix_local_path, download_local_path)
 
+    def cleanLocalActivity():
+        data_into_list = prepare.tempFileRead()
+        print (data_into_list)
+        for section in configfile.sectionsNames():
+            print (section)
+            scriptsPath = prepare.setScriptsPath(data_into_list[1], data_into_list[3], section)
+            sipp_download_local_path = scriptsPath[0] + '/downloads'
+            aeonix_download_local_path = scriptsPath[1] + '/downloads'
+            print (sipp_download_local_path)
+            shutil.rmtree(sipp_download_local_path)
+            print (aeonix_download_local_path)
+            shutil.rmtree(aeonix_download_local_path)
+            os.makedirs(sipp_download_local_path, exist_ok = True)
+            os.makedirs(aeonix_download_local_path, exist_ok = True)
 
     def tempFileWrite(tempWrite):
         with open("temp", "w") as tempfile:

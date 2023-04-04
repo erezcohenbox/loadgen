@@ -3,6 +3,42 @@ from configfile import configfile
 from prepare import *
 from helpers import *
 from environmnt import environmnt
+import socket
+
+#sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#sock.settimeout(0.5)
+#result = sock.connect_ex(('10.2.4.77',22))
+#if result == 0:
+#   print ('port OPEN')
+#else:
+#   print('port CLOSED, connect_ex returned: '+ str(result))
+#sock.close()
+
+#def __init__(self, server, component, operation = 'comm'):
+b = environmnt('10.2.4.72','aeonix').comm
+print (b)
+a = environmnt('10.2.4.72','sipp', 'jobs')
+#connect = environmnt.connect(a)
+client = environmnt.sippWalker(a)
+print(client)
+
+
+#import paramiko
+ 
+   # create a channel
+#transport = paramiko.Transport('196.168.41.222', 22)
+##transport = paramiko.Transport(('196.168.41.222', 22))
+#transport.connect(username='root', password='root')
+ 
+#ssh = paramiko.SSHClient()
+#ssh._transport = transport
+
+#stdin, stdout, stderr = ssh.exec_command('df -h')
+#print(stdout. read(). decode('utf-8'))
+
+#transport. close()
+
+
 
 
 #a = environmnt.check_aeonix('10.2.4.72', 'ipaddress')
@@ -14,9 +50,9 @@ from environmnt import environmnt
 #a = environmnt.check('10.2.4.72', 'sipp', 'upload')
 #print(a)
 #check(server, component, opration)
-a = environmnt('10.2.4.73', 'aeonix', 'status')
-print(a.comm)
-print(a.check())
+#a = environmnt('10.2.4.73', 'aeonix', 'status')
+#print(a.comm)
+#print(a.check())
 
 # def __init__(self, server, component, opration):
 
