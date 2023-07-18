@@ -4,19 +4,28 @@ timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 #timestamp_zip = datetime.datetime.now().strftime("_%Y-%m-%d_%H_%M_%S") 
 
 class bcolors:
-    #PROMPT   =   '\033[90m'    #GRAY
-    PROMPT   =   '\033[93m'     #YELLOW
-    FAIL     =   '\033[91m'     #RED
-    PASS     =   '\033[92m'     #GREEN
-    WARNING  =   '\033[93m'     #YELLOW
-    WARNINGX =   '\033[95m'     #PURPLE/PINK
-    INFO     =   '\033[96m'     #LIGHT BLUE
-    MENU     =   '\033[97m'     #WHITE
-    RESET    =   '\033[0m'      #RESET
-    CLS      =   '\033[2J'      #CLS
-    IND      =   '    '         #INDENTATION
+    ATTN    =   '\033[90m'     # GRAY
+    PROMPT   =   '\033[93m'     # YELLOW
+    FAIL     =   '\033[91m'     # RED
+    PASS     =   '\033[92m'     # GREEN
+    WARNING  =   '\033[93m'     # YELLOW
+    WARNINGX =   '\033[95m'     # PURPLE/PINK
+    INFO     =   '\033[96m'     # LIGHT BLUE
+    MENU     =   '\033[97m'     # WHITE
+    RESET    =   '\033[0m'      # RESET
+    CLS      =   '\033[2J'      # CLS
+    IND      =   '    '         # INDENTATION
 
 class output:
+    prompt_indent          = bcolors.FAIL + bcolors.IND
+    prompt_indent_1        = bcolors.FAIL + bcolors.IND + '- '
+    prompt_indent_fail     = bcolors.FAIL + bcolors.IND
+    prompt_indent_fail_1   = bcolors.FAIL + bcolors.IND + '- '
+    prompt_indent_pass     = bcolors.PASS + bcolors.IND
+    prompt_indent_pass_1   = bcolors.PASS + bcolors.IND + '- '
+    prompt_indent_attn     = bcolors.ATTN + bcolors.IND
+    prompt_indent_attn_1   = bcolors.ATTN + bcolors.IND + '- '
+
     prompt_main_goodbye    = bcolors.WARNING + bcolors.IND + "> goodbye...\n" + bcolors.RESET
 
     prompt_configfile_fail = bcolors.FAIL + bcolors.IND + 'invalid entry -or- user aborted' + bcolors.RESET
@@ -46,18 +55,26 @@ class output:
     
     prompt_environment_table_header             = bcolors.INFO + bcolors.IND + '         ip address       network      status                 version' + bcolors.RESET
     prompt_environment_table_border             = bcolors.INFO + bcolors.IND + '---------------------------------------------------------------------' + bcolors.RESET
+    
+    prompt_environmnt_handler_1                 = bcolors.INFO + bcolors.IND + 'handling ' + bcolors.RESET
+    prompt_environmnt_handler_sipp              = bcolors.INFO + bcolors.IND + 'handling sipp ' + bcolors.RESET
+    prompt_environmnt_handler_aeonix            = bcolors.INFO + bcolors.IND + 'handling aeonix ' + bcolors.RESET
+    prompt_environmnt_handler_2                 = bcolors.INFO + ' operation of simulator server environment: ' + bcolors.RESET
+    prompt_environment_collect                  = bcolors.INFO + bcolors.IND + 'collect log files into /logs directory' + bcolors.RESET
+    prompt_environment_pack                     = bcolors.INFO + bcolors.IND + 'zip all log files from /logs directory to /packs directory' + bcolors.RESET
+    prompt_environment_download                 = bcolors.INFO + bcolors.IND + 'download all zip files from ../packs directory' + bcolors.RESET
 
 class logger():
-    log_environment_upload          = 'echo ' + timestamp + ' created and uploaded files \r >> simulator/load.info'
-    log_environment_collect         = 'echo ' + timestamp + ' collect log files into ../logs directory \r >> simulator/load.info'
-    log_environment_pack            = 'echo ' + timestamp + ' zip all log files from ../logs directory to ../packs directory \r >> simulator/load.info'
-    log_environment_download        = 'echo ' + timestamp + ' download all zip files from ../packs directory \r >> simulator/load.info'
-    log_environment_clean           = 'echo ' + timestamp + ' clean up the collected log files from ../logs directory \r >> simulator/load.info'
-    log_environment_cleanZip        = 'echo ' + timestamp + ' clean up the collected zip files from ../packs directory \r >> simulator/load.info'
-    log_environment_erase_aeonix    = 'echo ' + timestamp + ' clean up current aeonix server log files \r >> simulator/load.info'
-    log_environment_erase_sipp      = 'echo ' + timestamp + ' clean up current sipp log files \r >> simulator/load.info'
-    log_environment_reboot          = 'echo ' + timestamp + ' about to initiate a reboot to the machine! \r >> simulator/load.info'
-    log_environment_stop            = 'echo ' + timestamp + ' about to stop the aeonix services \r >> simulator/load.info'
-    log_environment_start           = 'echo ' + timestamp + ' about to start the aeonix services \r >> simulator/load.info'
-    log_environment_restart         = 'echo ' + timestamp + ' about to restart the aeonix services \r >> simulator/load.info'
-    log_environment_terminate       = 'echo ' + timestamp + ' terminate all running sipp jobs \r >> simulator/load.info'
+    log_environment_upload          = 'echo ' + timestamp + ' \| created and uploaded files \r >> simulator/load.info'
+    log_environment_collect         = 'echo ' + timestamp + ' \| collect log files into /logs directory \r >> simulator/load.info'
+    log_environment_pack            = 'echo ' + timestamp + ' \| zip all log files from /logs directory to /packs directory \r >> simulator/load.info'
+    log_environment_download        = 'echo ' + timestamp + ' \| download all zip files from /packs directory \r >> simulator/load.info'
+    log_environment_clean           = 'echo ' + timestamp + ' \| clean up the collected log files from /logs directory \r >> simulator/load.info'
+    log_environment_cleanPacks      = 'echo ' + timestamp + ' \| clean up the collected zip files from /packs directory \r >> simulator/load.info'
+    log_environment_erase_aeonix    = 'echo ' + timestamp + ' \| clean up current aeonix server log files \r >> simulator/load.info'
+    log_environment_erase_sipp      = 'echo ' + timestamp + ' \| clean up current sipp log files \r >> simulator/load.info'
+    log_environment_reboot          = 'echo ' + timestamp + ' \| about to initiate a reboot to the machine! \r >> simulator/load.info'
+    log_environment_stop            = 'echo ' + timestamp + ' \| about to stop the aeonix services \r >> simulator/load.info'
+    log_environment_start           = 'echo ' + timestamp + ' \| about to start the aeonix services \r >> simulator/load.info'
+    log_environment_restart         = 'echo ' + timestamp + ' \| about to restart the aeonix services \r >> simulator/load.info'
+    log_environment_terminate       = 'echo ' + timestamp + ' \| terminate all running sipp jobs \r >> simulator/load.info'
